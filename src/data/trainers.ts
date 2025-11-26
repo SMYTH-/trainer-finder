@@ -15,7 +15,7 @@ export type Trainer = {
       locations: ["Canary Wharf", "Soho"],
       expertise: ["Strength", "Boxing"],
       tier: "Elite",
-      imageUrl: "https://via.placeholder.com/300x200?text=Sarah",
+      imageUrl: "https://placehold.co/300x200?text=Sarah",
       yearsExperience: 7,
     },
     {
@@ -24,7 +24,7 @@ export type Trainer = {
       locations: ["City"],
       expertise: ["Hypertrophy", "Conditioning"],
       tier: "Standard",
-      imageUrl: "https://via.placeholder.com/300x200?text=James",
+      imageUrl: "https://placehold.co/300x200?text=James",
       yearsExperience: 3,
     },
     {
@@ -33,7 +33,7 @@ export type Trainer = {
       locations: ["Canary Wharf"],
       expertise: ["Boxing", "Mobility"],
       tier: "Master",
-      imageUrl: "https://via.placeholder.com/300x200?text=Amelia",
+      imageUrl: "https://placehold.co/300x200?text=Amelia",
       yearsExperience: 9,
     },
   ];

@@ -3,12 +3,22 @@ import { trainers } from "../data/trainers";
 import { TrainerCard } from "./TrainerCard";
 
 const ALL_LOCATIONS_LABEL = "All locations";
+const ALL_TIERS_LABEL = "All tiers";
 
 export function TrainerList() {
   const [selectedLocation, setSelectedLocation] = useState<string>(
     ALL_LOCATIONS_LABEL
   );
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedTier, setSelectedTier] = useState<string>(ALL_TIERS_LABEL);
+
+  const tiers = useMemo(() => {
+    const set = new Set<string>();
+    trainers.forEach((trainer) => {
+      set.add(trainer.tier);
+    });
+    return [ALL_TIERS_LABEL, ...Array.from(set)];
+  }, []);
 
   // Derive unique locations from the data
   const locations = useMemo(() => {
@@ -28,7 +38,11 @@ export function TrainerList() {
         selectedLocation === ALL_LOCATIONS_LABEL ||
         trainer.locations.includes(selectedLocation);
 
-      if (!matchesLocation) return false;
+      const matchesTier =
+        selectedTier === ALL_TIERS_LABEL ||
+        trainer.tier === selectedTier;
+
+      if (!matchesLocation || !matchesTier) return false;
 
       if (!term) return true;
 
@@ -42,12 +56,12 @@ export function TrainerList() {
 
       return haystack.includes(term);
     });
-  }, [selectedLocation, searchTerm]);
+  }, [selectedLocation, selectedTier, searchTerm]);
 
   return (
     <section className="space-y-4">
       {/* Filters row */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 flex-wrap md:flex-row md:items-center md:justify-between">
         {/* Search */}
         <div className="flex flex-1 items-center gap-2">
           <label
@@ -84,6 +98,24 @@ export function TrainerList() {
                 ].join(" ")}
               >
                 {location}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tier pills */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-slate-600">Filter by tier:</span>
+          {tiers.map((tier) => {
+            const isActive = tier === selectedTier;
+            return (
+              <button key={tier} type="button" onClick={() => setSelectedTier(tier)} className={[
+                "rounded-full border px-3 py-1 text-sm transition",
+                isActive
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-300 bg-white text-slate-800 hover:border-slate-500",
+              ].join(" ")}>
+                {tier}
               </button>
             );
           })}
