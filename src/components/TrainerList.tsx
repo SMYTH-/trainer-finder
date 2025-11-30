@@ -45,6 +45,9 @@ export function TrainerList() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedTier, setSelectedTier] = useState<string>(ALL_TIERS_LABEL);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  // Track favourite trainer IDs
+  const [favouriteTrainerIds, setFavouriteTrainerIds] = useState<number[]>([]);
+  const favouriteCount = favouriteTrainerIds.length;
 
   const tiers = useMemo(() => {
     const set = new Set<string>();
@@ -91,8 +94,15 @@ export function TrainerList() {
   function handleClosePanel() {
     setSelectedTrainer(null);
   }
-  
 
+  function handleToggleFavourite(trainerId: number) {
+    setFavouriteTrainerIds((prevIds) =>
+      prevIds.includes(trainerId)
+        ? prevIds.filter((id) => id !== trainerId)
+        : [...prevIds, trainerId]
+    );
+  }
+  
   return (
 
     <section className="space-y-4">
@@ -109,7 +119,14 @@ export function TrainerList() {
       />
 
       {/* Heading */}
-      <h1 className="text-xl font-semibold">Available Trainers</h1>
+      <h1 className="text-xl font-semibold">
+        Available Trainers
+        {favouriteCount > 0 && (
+          <span className="ml-2 text-sm font-normal text-slate-500">
+            · {favouriteCount} favourite{favouriteCount > 1 ? "s" : ""}
+          </span>
+        )}
+      </h1>
 
       {/* Results */}
       {filteredTrainers.length === 0 ? (
@@ -122,6 +139,8 @@ export function TrainerList() {
             <TrainerCard
               key={trainer.id}
               trainer={trainer}
+              isFavourite={favouriteTrainerIds.includes(trainer.id)}
+              onToggleFavourite={() => handleToggleFavourite(trainer.id)}
               onSelect={() => handleSelectTrainer(trainer)}
             />
           ))}
