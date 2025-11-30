@@ -2,11 +2,17 @@ import type { Trainer } from "../data/trainers";
 
 type TrainerCardProps = {
   trainer: Trainer;
+  onSelect?: () => void;
 };
 
-export function TrainerCard({ trainer }: TrainerCardProps) {
+
+export function TrainerCard({ trainer, onSelect }: TrainerCardProps) {
   return (
-    <article className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <button
+      type="button"
+      onClick={onSelect}
+      className="flex w-full gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+    >
       <img
         src={trainer.imageUrl}
         alt={trainer.name}
@@ -28,6 +34,7 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
           {trainer.yearsExperience} years
         </p>
       </div>
-    </article>
+    </button>
   );
 }
+

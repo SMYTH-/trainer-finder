@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { trainers } from "../data/trainers";
+import { trainers, type Trainer } from "../data/trainers";
 import { TrainerCard } from "./TrainerCard";
 import { TrainerFilters } from "./TrainerFilters";
-
+import { TrainerDetailPanel } from "./TrainerDetailPanel";
 
 const ALL_LOCATIONS_LABEL = "All locations";
 const ALL_TIERS_LABEL = "All tiers";
@@ -13,6 +13,8 @@ export function TrainerList() {
   );
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedTier, setSelectedTier] = useState<string>(ALL_TIERS_LABEL);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+
 
   const tiers = useMemo(() => {
     const set = new Set<string>();
@@ -64,7 +66,18 @@ export function TrainerList() {
     setSelectedLocation(ALL_LOCATIONS_LABEL);
     setSelectedTier(ALL_TIERS_LABEL);
     setSearchTerm("");
-  }  
+  }
+  
+  // Handle trainer selection
+  // Show trainer details in a panel
+  function handleSelectTrainer(trainer: Trainer) {
+    setSelectedTrainer(trainer);
+  }
+  
+  function handleClosePanel() {
+    setSelectedTrainer(null);
+  }
+  
 
   return (
 
@@ -92,10 +105,16 @@ export function TrainerList() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filteredTrainers.map((trainer) => (
-            <TrainerCard key={trainer.id} trainer={trainer} />
+            <TrainerCard
+              key={trainer.id}
+              trainer={trainer}
+              onSelect={() => handleSelectTrainer(trainer)}
+            />
           ))}
         </div>
       )}
+
+      <TrainerDetailPanel trainer={selectedTrainer} onClose={handleClosePanel} />
     </section>
   );
 }

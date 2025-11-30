@@ -24,7 +24,7 @@ type TrainerFiltersProps = {
     return (
       <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-center md:justify-between">
         {/* Search */}
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex items-center gap-2">
           <label
             htmlFor="trainer-search"
             className="text-sm font-medium text-slate-700"
