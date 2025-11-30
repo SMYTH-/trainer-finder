@@ -9,7 +9,7 @@ function App() {
             Trainer Finder
           </h1>
           <p className="text-slate-600">
-            Prototype – we&apos;ll grow this into a full product-style app.
+            Prototype
           </p>
         </header>
 
