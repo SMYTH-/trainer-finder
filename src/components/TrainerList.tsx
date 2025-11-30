@@ -7,6 +7,37 @@ import { TrainerDetailPanel } from "./TrainerDetailPanel";
 const ALL_LOCATIONS_LABEL = "All locations";
 const ALL_TIERS_LABEL = "All tiers";
 
+function computeFilteredTrainers(
+  allTrainers: Trainer[],
+  selectedLocation: string,
+  selectedTier: string,
+  searchTerm: string
+): Trainer[] {
+  const term = searchTerm.trim().toLowerCase();
+
+  return allTrainers.filter((trainer) => {
+    const matchesLocation =
+      selectedLocation === ALL_LOCATIONS_LABEL ||
+      trainer.locations.includes(selectedLocation);
+
+    const matchesTier =
+      selectedTier === ALL_TIERS_LABEL || trainer.tier === selectedTier;
+
+    if (!matchesLocation || !matchesTier) return false;
+    if (!term) return true;
+
+    const haystack = [
+      trainer.name,
+      ...trainer.expertise,
+      ...trainer.locations,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(term);
+  });
+}
+
 export function TrainerList() {
   const [selectedLocation, setSelectedLocation] = useState<string>(
     ALL_LOCATIONS_LABEL
@@ -14,7 +45,6 @@ export function TrainerList() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedTier, setSelectedTier] = useState<string>(ALL_TIERS_LABEL);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
-
 
   const tiers = useMemo(() => {
     const set = new Set<string>();
@@ -33,34 +63,18 @@ export function TrainerList() {
     return [ALL_LOCATIONS_LABEL, ...Array.from(set)];
   }, []);
 
-  // Combine location + search filtering in one place
-  const filteredTrainers = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-
-    return trainers.filter((trainer) => {
-      const matchesLocation =
-        selectedLocation === ALL_LOCATIONS_LABEL ||
-        trainer.locations.includes(selectedLocation);
-
-      const matchesTier =
-        selectedTier === ALL_TIERS_LABEL ||
-        trainer.tier === selectedTier;
-
-      if (!matchesLocation || !matchesTier) return false;
-
-      if (!term) return true;
-
-      const haystack = [
-        trainer.name,
-        ...trainer.expertise,
-        ...trainer.locations,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(term);
-    });
-  }, [selectedLocation, selectedTier, searchTerm]);
+  // Compute filtered trainers based on the selected filters and search term
+  const filteredTrainers = useMemo(
+    () =>
+      computeFilteredTrainers(
+        trainers,
+        selectedLocation,
+        selectedTier,
+        searchTerm
+      ),
+    [selectedLocation, selectedTier, searchTerm]
+  );
+  
 
   function handleClearFilters() {
     setSelectedLocation(ALL_LOCATIONS_LABEL);
