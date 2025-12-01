@@ -53,6 +53,7 @@ export function TrainerList() {
   // Track favourite trainer IDs
   const [favouriteTrainerIds, setFavouriteTrainerIds] = useState<number[]>([]);
   const favouriteCount = favouriteTrainerIds.length;
+  const [showFavouritesOnly, setShowFavouritesOnly] = useState<boolean>(false);
 
   const tiers = useMemo(() => {
     const set = new Set<string>();
@@ -80,8 +81,20 @@ export function TrainerList() {
         selectedTier,
         searchTerm
       ),
-    [selectedLocation, selectedTier, searchTerm]
+    [selectedLocation, selectedTier, searchTerm, trainers]
   );
+
+  const visibleTrainers = useMemo(() => {
+    if (!showFavouritesOnly) {
+      return filteredTrainers;
+    }
+  
+    // Only show trainers whose IDs are in favouriteTrainerIds
+    return filteredTrainers.filter((trainer) =>
+      favouriteTrainerIds.includes(trainer.id)
+    );
+  }, [filteredTrainers, showFavouritesOnly, favouriteTrainerIds]);
+  
 
   useEffect(() => {
     let isCancelled = false;
@@ -162,18 +175,29 @@ export function TrainerList() {
           </span>
       )}</h1>
 
+      {favouriteTrainerIds.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowFavouritesOnly((prev) => !prev)}
+          className="text-sm text-slate-600 underline underline-offset-4 hover:text-slate-900"
+        >
+          {showFavouritesOnly ? "Show all trainers" : "Show favourites only"}
+        </button>
+      )}
+
+
       {/* Loading / Error / Empty / Results */}
       {isLoading ? (
         <p className="text-sm text-slate-500">Loading trainers…</p>
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
-      ) : filteredTrainers.length === 0 ? (
+      ) : visibleTrainers.length === 0 ? (
         <p className="italic text-slate-500">
-          No trainers match this filter. Try adjusting your search or location.
+          No trainers match this filter. Try adjusting your search, location, tier, or favourites.
         </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {filteredTrainers.map((trainer) => (
+          {visibleTrainers.map((trainer) => (
             <TrainerCard
               key={trainer.id}
               trainer={trainer}
@@ -183,7 +207,7 @@ export function TrainerList() {
             />
           ))}
         </div>
-      )}
+      )}      
 
 
       <TrainerDetailPanel trainer={selectedTrainer} onClose={handleClosePanel} />
