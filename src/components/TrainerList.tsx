@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { trainers, type Trainer } from "../data/trainers";
+import { useMemo, useState, useEffect } from "react";
+import type { Trainer } from "../data/trainers";
+import { fetchTrainers } from "../api/trainers";
 import { TrainerCard } from "./TrainerCard";
 import { TrainerFilters } from "./TrainerFilters";
 import { TrainerDetailPanel } from "./TrainerDetailPanel";
@@ -39,6 +40,10 @@ function computeFilteredTrainers(
 }
 
 export function TrainerList() {
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [selectedLocation, setSelectedLocation] = useState<string>(
     ALL_LOCATIONS_LABEL
   );
@@ -55,7 +60,7 @@ export function TrainerList() {
       set.add(trainer.tier);
     });
     return [ALL_TIERS_LABEL, ...Array.from(set)];
-  }, []);
+  }, [trainers]);
 
   // Derive unique locations from the data
   const locations = useMemo(() => {
@@ -64,7 +69,7 @@ export function TrainerList() {
       trainer.locations.forEach((loc) => set.add(loc));
     });
     return [ALL_LOCATIONS_LABEL, ...Array.from(set)];
-  }, []);
+  }, [trainers]);
 
   // Compute filtered trainers based on the selected filters and search term
   const filteredTrainers = useMemo(
@@ -77,7 +82,36 @@ export function TrainerList() {
       ),
     [selectedLocation, selectedTier, searchTerm]
   );
-  
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadTrainers() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const result = await fetchTrainers();
+        if (!isCancelled) {
+          setTrainers(result);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setError("Failed to load trainers. Please try again.");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadTrainers();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
 
   function handleClearFilters() {
     setSelectedLocation(ALL_LOCATIONS_LABEL);
@@ -121,15 +155,19 @@ export function TrainerList() {
       {/* Heading */}
       <h1 className="text-xl font-semibold">
         Available Trainers
-        {favouriteCount > 0 && (
+        {favouriteTrainerIds.length > 0 && (
           <span className="ml-2 text-sm font-normal text-slate-500">
-            · {favouriteCount} favourite{favouriteCount > 1 ? "s" : ""}
+            · {favouriteTrainerIds.length} favourite
+            {favouriteTrainerIds.length > 1 ? "s" : ""}
           </span>
-        )}
-      </h1>
+      )}</h1>
 
-      {/* Results */}
-      {filteredTrainers.length === 0 ? (
+      {/* Loading / Error / Empty / Results */}
+      {isLoading ? (
+        <p className="text-sm text-slate-500">Loading trainers…</p>
+      ) : error ? (
+        <p className="text-sm text-red-600">{error}</p>
+      ) : filteredTrainers.length === 0 ? (
         <p className="italic text-slate-500">
           No trainers match this filter. Try adjusting your search or location.
         </p>
@@ -139,13 +177,14 @@ export function TrainerList() {
             <TrainerCard
               key={trainer.id}
               trainer={trainer}
+              onSelect={() => handleSelectTrainer(trainer)}
               isFavourite={favouriteTrainerIds.includes(trainer.id)}
               onToggleFavourite={() => handleToggleFavourite(trainer.id)}
-              onSelect={() => handleSelectTrainer(trainer)}
             />
           ))}
         </div>
       )}
+
 
       <TrainerDetailPanel trainer={selectedTrainer} onClose={handleClosePanel} />
     </section>
